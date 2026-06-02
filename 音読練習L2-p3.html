@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英語音読練習アプリ - The Big Dipper Times</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            background-color: #f0f4f8;
+            color: #2c3e50;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            color: #1a365d;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        .script-card {
+            background: #f8fafc;
+            border-left: 4px solid #3182ce;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 0 8px 8px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .script-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .speaker {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+        .english {
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: #1a202c;
+            margin-bottom: 6px;
+        }
+        .japanese {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-bottom: 12px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .btn-listen {
+            background-color: #3182ce;
+            color: #ffffff;
+        }
+        .btn-speak {
+            background-color: #38a169;
+            color: #ffffff;
+        }
+        .btn-speak.recording {
+            background-color: #e53e3e;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        .result-box {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            display: none;
+        }
+        .result-perfect {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+        .result-retry {
+            background-color: #fed7d7;
+            color: #742a2a;
+        }
+        .result-error {
+            background-color: #feebc8;
+            color: #744210;
+        }
+        .speech-text {
+            font-style: italic;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>英語音読練習アプリ</h1>
+    <div id="script-container"></div>
+</div>
+
+<script>
+    const scriptData = [
+        {
+            speaker: "Intro",
+            en: "Ken and Emma find an Internet news report on the practical use of illusionist art.",
+            ja: "ケンとエマは、トリックアートの実用化に関するインターネットのニュース報道を見つけます。"
+        },
+        {
+            speaker: "Newspaper",
+            en: "The Big Dipper Times",
+            ja: "ビッグ・ディッパー・タイムズ"
+        },
+        {
+            speaker: "Headline",
+            en: "Will a flower bed stop illegal bike parking?",
+            ja: "花壇は自転車の迷惑駐車を止めることができるでしょうか。"
+        },
+        {
+            speaker: "Date",
+            en: "January 31, 2020",
+            ja: "2020年1月31日"
+        },
+        {
+            speaker: "Body 1",
+            en: "Illegal parking of bikes has been an irritating problem for the people in Osaka.",
+            ja: "自転車の迷惑駐車は、大阪の人々にとってイライラさせる問題であり続けています。"
+        },
+        {
+            speaker: "Body 1",
+            en: "Now an 8-year-old boy in Toyonaka City has thought of a way to solve this problem.",
+            ja: "現在、豊中市の8歳の少年が、この問題を解決する方法を思いつきました。"
+        },
+        {
+            speaker: "Body 1",
+            en: "He believes that people will not park their bikes on a flower bed.",
+            ja: "彼は、人々は花壇の上には自転車を駐車しないだろうと考えています。"
+        },
+        {
+            speaker: "Body 2",
+            en: "The city office adopted the boy’s idea.",
+            ja: "市役所はその少年のアイデアを採用しました。"
+        },
+        {
+            speaker: "Body 2",
+            en: "Then it began an experiment together with Osaka University and a company.",
+            ja: "そして、大阪大学やある企業と一緒に実験を始めました。"
+        },
+        {
+            speaker: "Body 2",
+            en: "It put an illusionist picture of a flower bed on a public sidewalk.",
+            ja: "市は公道（歩道）に花壇のトリックアートの絵を設置しました。"
+        },
+        {
+            speaker: "Body 2",
+            en: "From a distance, the picture just looks like an ordinary flat drawing of flowers.",
+            ja: "遠くから見ると、その絵は普通の平らな花の絵に見えるだけです。"
+        },
+        {
+            speaker: "Body 2",
+            en: "From nearby, however, the flowers suddenly seem to stand up in 3-D.",
+            ja: "しかし近くから見ると、花が突然3D（立体）で立ち上がっているように見えます。"
+        },
+        {
+            speaker: "Body 2",
+            en: "City officials are hopeful that the idea will work.",
+            ja: "市の職員たちは、そのアイデアがうまくいくことを期待しています。"
+        },
+        {
+            speaker: "Body 2",
+            en: "After the first week, they saw that illegal parking had decreased.",
+            ja: "最初の1週間が経過した後、彼らは迷惑駐車が減少したことを確認しました。"
+        }
+    ];
+
+    const clean = (txt) => txt.toLowerCase().replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, " ").trim();
+
+    const container = document.getElementById('script-container');
+    let recognition = null;
+    let activeIndex = null;
+
+    scriptData.forEach((data, index) => {
+        const card = document.createElement('div');
+        card.className = 'script-card';
+        card.innerHTML = `
+            <div class="speaker">${data.speaker}</div>
+            <div class="english">${data.en}</div>
+            <div class="japanese">${data.ja}</div>
+            <div class="btn-group">
+                <button class="btn-listen" onclick="listen(${index})">🔊 お手本を聴く</button>
+                <button class="btn-speak" id="btn-speak-${index}" onclick="speak(${index})">🎙️ 発音する</button>
+            </div>
+            <div class="result-box" id="result-${index}"></div>
+        `;
+        container.appendChild(card);
+    });
+
+    function listen(index) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(scriptData[index].en);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function speak(index) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert('お使いのブラウザは音声認識に対応していません。Google Chrome（PC/Android）またはSafari（iOS）をお試しください。');
+            return;
+        }
+
+        if (recognition) {
+            recognition.abort();
+            if (activeIndex !== null) {
+                resetTargetButton(activeIndex);
+            }
+        }
+
+        activeIndex = index;
+        const btn = document.getElementById(`btn-speak-${index}`);
+        const resultBox = document.getElementById(`result-${index}`);
+
+        btn.classList.add('recording');
+        btn.innerHTML = '🛑 録音中...';
+        resultBox.style.display = 'none';
+
+        recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = (event) => {
+            const speechResult = event.results[0][0].transcript;
+            const cleanedSpeech = clean(speechResult);
+            const cleanedTarget = clean(scriptData[index].en);
+
+            resultBox.style.display = 'block';
+            if (cleanedSpeech === cleanedTarget) {
+                resultBox.className = 'result-box result-perfect';
+                resultBox.innerHTML = `<strong>✅ Perfect!</strong><div class="speech-text">あなたの発音: "${speechResult}"</div>`;
+            } else {
+                resultBox.className = 'result-box result-retry';
+                resultBox.innerHTML = `<strong>❌ もう一度！</strong><div class="speech-text">聞き取れた音: "${speechResult}"</div>`;
+            }
+        };
+
+        recognition.onerror = (event) => {
+            if (event.error !== 'aborted') {
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box result-error';
+                resultBox.innerHTML = 'うまく聞き取れませんでした。もう一度ボタンを押して話してください。';
+            }
+        };
+
+        recognition.onend = () => {
+            resetTargetButton(index);
+        };
+
+        recognition.start();
+    }
+
+    function resetTargetButton(index) {
+        const btn = document.getElementById(`btn-speak-${index}`);
+        if (btn) {
+            btn.classList.remove('recording');
+            btn.innerHTML = '🎙️ 発音する';
+        }
+    }
+</script>
+
+</body>
+</html>
