@@ -7,7 +7,13 @@
     <style>
         body { font-family: sans-serif; background-color: #f0f4f8; color: #2c3e50; padding: 20px; line-height: 1.6; }
         .container { max-width: 700px; margin: 0 auto; background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        h1 { font-size: 1.5rem; text-align: center; color: #1a365d; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        h1 { font-size: 1.5rem; text-align: center; color: #1a365d; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* スピード調整エリアのスタイル */
+        .speed-controller { background: #edf2f7; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+        .speed-label { font-weight: bold; font-size: 0.95rem; color: #4a5568; display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .speed-slider { width: 100%; cursor: pointer; height: 6px; border-radius: 3px; accent-color: #3182ce; }
+        
         .script-card { background: #f8fafc; border-left: 4px solid #3182ce; padding: 16px; margin-bottom: 16px; border-radius: 0 8px 8px 0; }
         .speaker { font-size: 0.8rem; font-weight: bold; color: #4a5568; text-transform: uppercase; }
         .english { font-size: 1.15rem; font-weight: 500; color: #1a202c; margin: 6px 0; }
@@ -28,11 +34,19 @@
 
 <div class="container">
     <h1>英語音読練習アプリ</h1>
+    
+    <div class="speed-controller">
+        <div class="speed-label">
+            <span>🔊 お手本の再生スピード</span>
+            <span id="speed-val">0.75倍速</span>
+        </div>
+        <input type="range" id="speed-slider" class="speed-slider" min="0.5" max="1.5" step="0.05" value="0.75" oninput="updateSpeedLabel(this.value)">
+    </div>
+
     <div id="script-container"></div>
 </div>
 
 <script>
-    // 特殊なアポストロフィなどを安全な文字に置換済みです
     const scriptData = [
         { speaker: "Intro", en: "Ken and Emma find an Internet news report on the practical use of illusionist art.", ja: "ケンとエマは、トリックアートの実用化に関するインターネットのニュース報道を見つけます。" },
         { speaker: "Newspaper", en: "The Big Dipper Times", ja: "ビッグ・ディッパー・タイムズ" },
@@ -55,6 +69,11 @@
     let recognition = null;
     let activeIndex = null;
 
+    // スピード表示の数値をリアルタイムで書き換える関数
+    function updateSpeedLabel(val) {
+        document.getElementById('speed-val').textContent = val + '倍速';
+    }
+
     scriptData.forEach((data, index) => {
         const card = document.createElement('div');
         card.className = 'script-card';
@@ -75,7 +94,11 @@
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(scriptData[index].en);
         utterance.lang = 'en-US';
-        utterance.rate = 0.9;
+        
+        // スライダーの設定値を読み取って速度に適用
+        const currentSpeed = parseFloat(document.getElementById('speed-slider').value);
+        utterance.rate = currentSpeed;
+        
         window.speechSynthesis.speak(utterance);
     }
 
